@@ -1,0 +1,6 @@
+# 例: .gitignore 末尾に追記
+# build artefacts
+dist/
+# secrets
+.env
+*credentials*.json

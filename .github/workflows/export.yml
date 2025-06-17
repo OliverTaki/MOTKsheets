@@ -1,0 +1,42 @@
+name: Export MOTKsheets
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm@10.12.1
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Setup Google Credentials
+      run: echo "${{ secrets.GOOGLE_CREDENTIALS }}" > google-credentials.json
+
+    - name: Run export script
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: google-credentials.json
+      run: pnpm ts-node scripts/export_all.ts
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add dist/motk.json
+        git commit -m "Update motk.json" || echo "No changes to commit"
+        git push
+      if: success()
